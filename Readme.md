@@ -26,8 +26,8 @@ Calculated values and a simulation:
 
 ![Calulated values](out/figure_graphs_all.png)
 
-A video, if Github can do this:
+A gif of a rolling ball, with no obstacle:
+![Rolling ball](out/1-simple-curve-ball.gif)
 
-<video src="out/1-simple-curve-ball.mp4" width="320" height="200" controls preload></video>
 
 
