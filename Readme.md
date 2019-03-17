@@ -12,8 +12,8 @@ There are multiple files to run.
 You can run a jupyter notebook for some graphs and lots of sample code: `jupyter notebook` then open `Test data.ipynb`.  
 Or run one of the three main files with `python`: `find_best_braking_factor.py`, `plot_numerical_model.py`, `obstacle_height_tester.py`.
 
-A rendered version of [Test data.ipynb](Test data.ipynb) can be found in 
-[Test data.html](Test data.html), so you don't need to run jupyter to see the results.
+A rendered version of [Test data.ipynb](Test%20data.ipynb) can be found in 
+[Test data.html](Test%20data.html), so you don't need to run jupyter to see the results.
 
 ## Explanation
 
