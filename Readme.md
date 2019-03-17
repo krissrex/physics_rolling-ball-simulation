@@ -3,7 +3,7 @@
 
 ## Running
 
-1. Install python 3.6 or later (needs `f-strings` and `type-hinting`)
+1. Install python 3.6 or later (needs [format strings](https://www.python.org/dev/peps/pep-0498/) and [type hinting](https://docs.python.org/3/library/typing.html))
 2. Set up a virtualenv: `virtualenv .venv` and `source .venv/Scripts/activate`
 3. Install dependencies `pip install -r requirements.txt`
 4. Run what you want (see below).
