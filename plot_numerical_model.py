@@ -18,6 +18,10 @@ def plot_measured_numerical_model():
     obstacle_x = 0.59890243
     #print(f"Roots at {np.roots(np.polyder(polynom))}") # Used to find obstacle_x candidates
     print(f"Obstacle at {obstacle_x}")
+    exponents = [len(polynom)-i-1 for i in range(len(polynom))]
+    pstr = ("x^{{{}}} + ".join([str(round(x, 3)) for x in polynom])).format(*exponents)
+    pstr = pstr.replace("+ -", "- ")
+    print("Polynom: " + pstr)
     
     # Values here are measured during experiment
     ball = num_integ.Ball(mass=0.05, radius=0.0189/2, start_x=ball_x, start_y=ball_y)
@@ -52,46 +56,133 @@ def plot_measured_numerical_model():
     passes = passChecker.detectPasses(integrator.time, integrator.position, integrator.velocity)
     print(f"Found {len(passes)} passes")
     
+    # Error calculations
+    delta_mass = 0.0001
+    delta_gravity = 0.004
+    def plotError():
+      acc = np.array(integrator.acceleration)
+      v = np.array(integrator.velocity)
+      g = 9.81
+      m = 0.05
+      def R_alpha(x):
+        info = integrator.track.track_info(x)
+        return info.R, info.alpha
+      r_a = np.array([R_alpha(x) for x in integrator.position])
+      r = r_a[:,0]
+      alpha = r_a[:,1]
+
+      friction_error = np.abs(acc)*(2/5)*delta_mass
+      normalForce_error = np.sqrt(np.square(\
+            ((v*v)/(r) + g*np.cos(alpha))*delta_mass
+          )\
+        + np.square(\
+            m*np.cos(alpha)*delta_gravity\
+          ))
+    
+      fig, ax0 = plt.subplots(1, figsize=(16, 9))
+      ax0.set_xlim(0, 10)
+      ax0.plot(integrator.time, friction_error, label="Delta f")
+      ax0.plot(integrator.time, normalForce_error, label="Delta N")
+      ax0.set_xlabel("Time [s]")
+      ax0.set_ylabel("Error [N]")
+      ax0.legend()
+      figure_path = "out/figure_graphs_simulated_delta_f_N.png"
+      fig.savefig(figure_path, dpi=96)
+    
+    plotError()
 
     # Plot stuff
-    fig, (ax0, ax1, ax2, ax3, ax4) = plt.subplots(5, figsize=(17, 12))
+    fig, (ax0) = plt.subplots(1, figsize=(16, 9))
     
     measured_index = min(int(steps*integrator.timestep/0.01), len(measured_time))
 
     # Plot the track and obstacle position, and mark where flight/lifoff happened (if any)
     x = np.linspace(0, track_end_x, 100)
+    ax0.set_xlim(0, track_end_x)
     ax0.plot(x, np.polyval(polynom, x), label="Track")
-    ax0.axvline(obstacle_x, label="Obstacle", color="red")
+    ax0.set_xlabel("x [m]")
+    ax0.set_ylabel("y [m]")
+    ax0.axvline(obstacle_x, label="Obstacle x=" + str(round(obstacle_x, 5)), color="red")
     ax0.legend()
     if flight:
         ax0.axvline(x=flight, label="Error! Liftoff/flight here")
-    
+    figure_path = "out/figure_graphs_simulated_track.png"
+    fig.savefig(figure_path, dpi=96)
+
     # Plot the calculated values and show a horizontal line for the obstacle
-    ax1.axhline(obstacle_x, label="x_obstacle", color="darkred", linestyle="dotted", alpha=0.8)
-    ax1.plot(integrator.time, integrator.position, label="Position", color="red")
+    fig, (ax1) = plt.subplots(1, figsize=(16, 9))
+    ax1.axhline(obstacle_x, label="Obstacle", color="darkred", linestyle="dotted", alpha=0.8)
+    ax1.plot(integrator.time, integrator.position, label="x position", color="red")
+    ax1.set_xlim(0, 10)
+    ax1.set_xlabel("Time [s]")
+    ax1.set_ylabel("x [m]")
+    ax1.legend(loc="lower right")
+    figure_path = "out/figure_graphs_simulated_x.png"
+    fig.savefig(figure_path, dpi=96)
+    
+    fig, (ax1) = plt.subplots(1, figsize=(16, 9))
     ax1.plot(integrator.time, integrator.velocity, label="Velocity")
+    ax1.set_xlim(0, 10)
+    ax1.set_xlabel("Time [s]")
+    ax1.set_ylabel("Parallell velocity [m/s]")
+    ax1.legend(loc="lower right")
+    figure_path = "out/figure_graphs_simulated_v.png"
+    fig.savefig(figure_path, dpi=96)
+
+    fig, (ax1) = plt.subplots(1, figsize=(16, 9))
     ax1.plot(integrator.time, integrator.acceleration, label="Acceleration")
-    ax1.legend()
-    
+    ax1.set_xlim(0, 10)
+    ax1.set_xlabel("Time [s]")
+    ax1.set_ylabel("Parallell acceleration [m/s^2]")
+    ax1.legend(loc="lower right")
+    figure_path = "out/figure_graphs_simulated_a.png"
+    fig.savefig(figure_path, dpi=96)
+
     # Plot the calculated forces
-    ax2.plot(integrator.time, frictions, label="Friction")
+    fig, (ax2) = plt.subplots(1, figsize=(16, 9))
+    ax2.set_xlim(0, 10)
+    ax2.plot(integrator.time, np.abs(frictions), label="Friction")
     ax2.plot(integrator.time, normalForces, label="Normal force")
+    ax2.set_xlabel("Time [s]")
+    ax2.set_ylabel("Force [N]")
     ax2.legend()
-    
+    figure_path = "out/figure_graphs_simulated_force.png"
+    fig.savefig(figure_path, dpi=96)
+
     # Plot comparisons to the "real" values, measured with Tracker
+    fig, (ax3) = plt.subplots(1, figsize=(12, 6))
+    ax3.set_xlim(0, 10)
+    ax3.axhline(obstacle_x, label="Obstacle", color="darkred", linestyle="dotted", alpha=0.8)
     ax3.plot(measured_data[:,0], measured_data[:,1], label="Measured position", color="black")
     ax3.plot(integrator.time, integrator.position, label="Calulated Position", color="red")
+    ax3.set_xlabel("Time [s]")
+    ax3.set_ylabel("x [m]")
     ax3.legend()
 
+    figure_path = "out/figure_graphs_comparison_x.png"
+    fig.savefig(figure_path, dpi=96)
+
+
+    fig, (ax4) = plt.subplots(1, figsize=(12, 6))
+    ax4.set_xlim(0, 10)    
     ax4.plot(integrator.time, normalForces, label="Calculated Normal force")
     ax4.plot(measured_time[:measured_index], measured_normalForces[:measured_index], label="Measured Normal force")
+    ax4.set_xlabel("Time [s]")
+    ax4.set_ylabel("Force [N]")
     ax4.legend()
+    figure_path = "out/figure_graphs_comparison_n.png"
+    fig.savefig(figure_path, dpi=96)
 
-    print("Showing plots")
-    figure_path = "out/figure_graphs_all.png"
-    fig.savefig(figure_path)
-    print("Saved figure of all plots to " + figure_path)
-    plt.show(block=True)
+
+    fig, (ax5) = plt.subplots(1, figsize=(12, 6))
+    ax5.set_xlim(0, 10)
+    ax5.plot(integrator.time, integrator.velocity, label="Calculated velocity")
+    ax5.plot(measured_time, measured_v, label="Measured velocity")
+    ax5.set_xlabel("Time [s]")
+    ax5.set_ylabel("Track parallell velocity [m/s]")
+    ax5.legend()
+    figure_path = "out/figure_graphs_comparison_v.png"
+    fig.savefig(figure_path, dpi=96)
 
 if __name__ == '__main__':
   plot_measured_numerical_model()

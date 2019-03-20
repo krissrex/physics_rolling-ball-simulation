@@ -13,12 +13,12 @@ def calculate_track_values(data: np.ndarray) -> np.ndarray:
     i += 1
     (prev_x, prev_y) = data[i-1][1:]
     (next_x, next_y) = data[i+1][1:]
-    distance = (next_x-prev_x)
+    distance = np.sign(next_x-prev_x)*np.sqrt((next_x-prev_x)**2 + (next_y - prev_y)**2)
     #delta_time = t - data[i-1][0]
     velocity = distance/(2*delta_time)
     velocities.append(velocity)
   velocities.append((velocities[-1] - velocities[-2])/delta_time)
-  velocities = smooth_data(velocities)
+  #velocities = smooth_data(velocities)
 
   accelerations = [0]
   for i, velocity in enumerate(velocities[1:]):
